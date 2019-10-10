@@ -14,6 +14,9 @@ onready var cam = $CameraArm/Pivot/Camera
 
 var camera_rotate = false
 var camera_drag = false
+var target_zoom = 20
+var smooth_zoom = target_zoom
+var ZOOM_SPEED = 10
 var target_cam_pos = Vector3.ZERO
 var motion = Vector3.ZERO
 var gui
@@ -38,11 +41,21 @@ func _process(delta):
 	calc_move(m_pos, delta)
 	if Input.is_action_just_pressed("main_command"):
 		move_all_units(m_pos)
+		self.transform
 	
 	# zoom
-	if abs(cam.get_transform().origin.z - target_cam_pos.z) > 0.5:
-		motion = Vector3.ZERO
-		print('- - - - - - - - - - - -')
+	smooth_zoom = lerp(smooth_zoom, target_zoom, ZOOM_SPEED * delta)
+	print('_1_')
+	print(smooth_zoom)
+	print(target_zoom - cam.get_transform().origin.z)
+	print('_2_')
+	if target_zoom - smooth_zoom > 0.05:
+		
+		motion = cam.get_transform().origin - Vector3(0,smooth_zoom,smooth_zoom)
+		print('- - - - - - - - - - - -', motion)
+		#cam.transform = 
+		cam.translate(motion)
+		return
 		#cam.translate_object_local(Vector3(0,0,1) * delta * 100)
 		print('target: ', target_cam_pos)
 		print('position: ', cam.get_transform().origin)
@@ -51,7 +64,6 @@ func _process(delta):
 		motion -= targetVector
 		motion = motion * MOVE_SPEED * delta
 		print('motion: ', motion)
-		cam.translate(motion)
 	#cam.origin = cam.origin.linear_interpolate(Vector3(-0.5,0.25,-0.5), delta)
 	
 
@@ -107,13 +119,19 @@ func raycast_from_mouse(m_pos, collision_mask):
 	
 func _on_input_button(event):
 	if event.button_index == 4:
-		target_cam_pos -= Vector3(0,1,1)
-		if target_cam_pos.z < 1:
-			target_cam_pos = Vector3(0,1,1)
+		target_zoom -= 1
+		if target_zoom < 1:
+			target_zoom = 1
+		#target_cam_pos -= Vector3(0,1,1)
+		#if target_cam_pos.z < 1:
+		#	target_cam_pos = Vector3(0,1,1)
 	elif event.button_index == 5:
-		target_cam_pos += Vector3(0,1,1)
-		if target_cam_pos.z > 35:
-			target_cam_pos = Vector3(0,35,35)
+		target_zoom += 1
+		if target_zoom > 35:
+			target_zoom = 35
+		#target_cam_pos += Vector3(0,1,1)
+		#if target_cam_pos.z > 35:
+		#	target_cam_pos = Vector3(0,35,35)
 	if event.button_index == 2 and event.pressed:
 		camera_rotate = true
 	else:
@@ -127,6 +145,10 @@ func _on_input_motion(event):
 	if camera_rotate:
 		# pivot
 		pivot.rotate_object_local(Vector3(-1, 0, 0), event.relative[1] / 100.0)
+		if pivot.rotation_degrees.x < -45:
+			pivot.rotate_x(deg2rad(abs(pivot.rotation_degrees.x) - 45))
+		if pivot.rotation_degrees.x > 45:
+			pivot.rotate_x(deg2rad(45 - pivot.rotation_degrees.x))
 		# rotate
 		rotate_object_local(Vector3(0, -1, 0), event.relative[0] / 100.0)
 	if camera_drag:
