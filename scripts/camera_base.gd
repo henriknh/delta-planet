@@ -12,13 +12,14 @@ onready var arm = $CameraArm
 onready var pivot = $CameraArm/Pivot
 onready var cam = $CameraArm/Pivot/Camera
 
+onready var target_planet = null
+
 var camera_rotate = false
 var camera_drag = false
+
 var target_zoom = 20
 var smooth_zoom = target_zoom
-var ZOOM_SPEED = 10
-var target_cam_pos = Vector3.ZERO
-var motion = Vector3.ZERO
+var ZOOM_SPEED = 25
 var gui
 
 func _ready():
@@ -26,48 +27,40 @@ func _ready():
 	gui.connect('_input_button', self, '_on_input_button')
 	gui.connect('_input_motion', self, '_on_input_motion')
 	
+	target_planet = get_node('/root/Spatial/Planet')
+	
+	print(target_planet.planet_size)
+	arm.translate(Vector3(0, target_planet.planet_size * 50, 0))
+	#init_on_planet()
+
+func _process(delta):
+	var m_pos = get_viewport().get_mouse_position()
+	edge_cam_move(m_pos, delta)
+	if Input.is_action_just_pressed("main_command"):
+		move_all_units(m_pos)
+	
+	# zoom
+	if target_zoom < target_planet.planet_size:
+		target_zoom = target_planet.planet_size
+	if target_zoom > target_planet.planet_size * 40:
+		target_zoom = target_planet.planet_size * 40
+	print(target_zoom)
+	smooth_zoom = lerp(smooth_zoom, target_zoom, ZOOM_SPEED * delta)
+	var diff = cam.get_transform().origin.z - smooth_zoom
+	if abs(target_zoom - cam.get_transform().origin.z) > 0.05:
+		cam.translate(cam.get_transform().basis.xform(Vector3(0,diff,-diff)))
+	
+	
+func init_on_planet():
 	var space_state = get_world().direct_space_state
 	var result = space_state.intersect_ray(Vector3(0,0,0), Vector3.UP * 1000)
 	print('raycast')
 	print(result)
 	if result:
 		arm.translate(result.position)
-	
-	target_cam_pos = cam.get_transform().origin
-	print(target_cam_pos)
+		print(result.position)
 
-func _process(delta):
-	var m_pos = get_viewport().get_mouse_position()
-	calc_move(m_pos, delta)
-	if Input.is_action_just_pressed("main_command"):
-		move_all_units(m_pos)
-		self.transform
-	
-	# zoom
-	smooth_zoom = lerp(smooth_zoom, target_zoom, ZOOM_SPEED * delta)
-	print('_1_')
-	print(smooth_zoom)
-	print(target_zoom - cam.get_transform().origin.z)
-	print('_2_')
-	if target_zoom - smooth_zoom > 0.05:
-		
-		motion = cam.get_transform().origin - Vector3(0,smooth_zoom,smooth_zoom)
-		print('- - - - - - - - - - - -', motion)
-		#cam.transform = 
-		cam.translate(motion)
-		return
-		#cam.translate_object_local(Vector3(0,0,1) * delta * 100)
-		print('target: ', target_cam_pos)
-		print('position: ', cam.get_transform().origin)
-		var targetVector = (cam.get_transform().origin - target_cam_pos).normalized()
-		print('vector: ', targetVector)
-		motion -= targetVector
-		motion = motion * MOVE_SPEED * delta
-		print('motion: ', motion)
-	#cam.origin = cam.origin.linear_interpolate(Vector3(-0.5,0.25,-0.5), delta)
-	
-
-func calc_move(m_pos, delta):
+func edge_cam_move(m_pos, delta):
 	if camera_drag:
 		return
 		
@@ -119,19 +112,9 @@ func raycast_from_mouse(m_pos, collision_mask):
 	
 func _on_input_button(event):
 	if event.button_index == 4:
-		target_zoom -= 1
-		if target_zoom < 1:
-			target_zoom = 1
-		#target_cam_pos -= Vector3(0,1,1)
-		#if target_cam_pos.z < 1:
-		#	target_cam_pos = Vector3(0,1,1)
+		target_zoom -= target_planet.planet_size
 	elif event.button_index == 5:
-		target_zoom += 1
-		if target_zoom > 35:
-			target_zoom = 35
-		#target_cam_pos += Vector3(0,1,1)
-		#if target_cam_pos.z > 35:
-		#	target_cam_pos = Vector3(0,35,35)
+		target_zoom += target_planet.planet_size
 	if event.button_index == 2 and event.pressed:
 		camera_rotate = true
 	else:
@@ -157,4 +140,3 @@ func _on_input_motion(event):
 		move_vec = Vector3(-z,0,x)
 		move_angle = 0.05
 		move(move_vec, move_angle)
-		

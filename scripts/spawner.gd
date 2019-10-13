@@ -17,7 +17,6 @@ func _ready():
 	gui.connect('_input_motion', self, '_on_input_motion')
 		
 func _on_input_button(event):
-	print('_on_input_button')
 	if selected:
 		if event.pressed and event.button_index == 1:
 			print(event)

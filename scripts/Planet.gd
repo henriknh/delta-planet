@@ -2,12 +2,16 @@ extends Spatial
 
 
 onready var functions = preload("res://scripts/Functions.gd").new()
+onready var shader_planet = preload("res://assets/shaders/planet.tres")
+onready var shader_outline = preload("res://assets/shaders/outline.tres")
+onready var shader_outline_script = preload("res://assets/shaders/outline_script.tres")
 
 enum PLANET_SIZE {
 	small = 2,
 	medium = 3,
 	large = 4
 }
+export(PLANET_SIZE) var planet_size = PLANET_SIZE.small
 
 func create_tri(corners):
 	var normal = -functions.calc_surface_normal_newell_method(corners)
@@ -20,10 +24,15 @@ func create_tri(corners):
 		tmpTri.add_vertex(corner)
 	tmpTri.end()
 	
+	# load shader material
+	
+	
 	var mat = SpatialMaterial.new()
 	mat.vertex_color_use_as_albedo = true
 	mat.albedo_color = Color.red
-	tmpTri.material_override = mat
+	#mat.shader = shader
+	shader_planet.next_pass = shader_outline_script
+	tmpTri.material_override = shader_planet
 	tmpTri.cast_shadow = true
 	
 	var body = StaticBody.new()
@@ -38,12 +47,12 @@ func create_tri(corners):
 	
 	add_child(tmpTri)
 
-func create_mesh(lla1, lla2, lla3, curr_division):
+func create_mesh(scale, lla1, lla2, lla3, curr_division):
 		if curr_division == 0:
 			var corners = PoolVector3Array()
-			corners.append(functions.lla_to_xyz(lla1))
-			corners.append(functions.lla_to_xyz(lla2))
-			corners.append(functions.lla_to_xyz(lla3))
+			corners.append(functions.lla_to_xyz(lla1) * scale)
+			corners.append(functions.lla_to_xyz(lla2) * scale)
+			corners.append(functions.lla_to_xyz(lla3) * scale)
 			create_tri(corners)
 		else:
 			var corner1 = lla1
@@ -56,13 +65,13 @@ func create_mesh(lla1, lla2, lla3, curr_division):
 			var order = [[1, 2, 6], [2, 4, 6], [2, 3, 4], [4, 5, 6]]
 			for i in order:
 				var next_division = curr_division - 1
-				create_mesh(corners[i[0] - 1], corners[i[1] - 1], corners[i[2] - 1], next_division)
+				create_mesh(scale, corners[i[0] - 1], corners[i[1] - 1], corners[i[2] - 1], next_division)
 
 func _ready():
-	print(PLANET_SIZE)
-	create_planet(PLANET_SIZE.small)
+	print('Planet size: ', planet_size)
+	create_planet(planet_size)
 	
-func create_planet(subdivisions=PLANET_SIZE.small):
+func create_planet(scale=PLANET_SIZE.small):
 	var lla1 = Vector3(0, -58.5, 0)
 	var lla2 = Vector3(0, 58.5, 0)
 	var lla3 = Vector3(180, 58.5, 0)
@@ -76,23 +85,23 @@ func create_planet(subdivisions=PLANET_SIZE.small):
 	var lla11 = Vector3(148.5, 0, 0)
 	var lla12 = Vector3(-148.5, 0, 0)
 
-	create_mesh(lla2, lla3, lla7, subdivisions)
-	create_mesh(lla2, lla6, lla3, subdivisions)
-	create_mesh(lla6, lla11, lla3, subdivisions)
-	create_mesh(lla3, lla11, lla12, subdivisions)
-	create_mesh(lla3, lla12, lla7, subdivisions)
-	create_mesh(lla8, lla7, lla12, subdivisions)
-	create_mesh(lla9, lla7, lla8, subdivisions)
-	create_mesh(lla9, lla2, lla7, subdivisions)
-	create_mesh(lla10, lla2, lla9, subdivisions)
-	create_mesh(lla10, lla6, lla2, subdivisions)
-	create_mesh(lla10, lla5, lla6, subdivisions)
-	create_mesh(lla5, lla11, lla6, subdivisions)
-	create_mesh(lla11, lla5, lla4, subdivisions)
-	create_mesh(lla11, lla4, lla12, subdivisions)
-	create_mesh(lla12, lla4, lla8, subdivisions)
-	create_mesh(lla1, lla9, lla8, subdivisions)
-	create_mesh(lla1, lla10, lla9, subdivisions)
-	create_mesh(lla5, lla10, lla1, subdivisions)
-	create_mesh(lla5, lla1, lla4, subdivisions)
-	create_mesh(lla4, lla1, lla8, subdivisions)
+	create_mesh(scale, lla2, lla3, lla7, scale)
+	create_mesh(scale, lla2, lla6, lla3, scale)
+	create_mesh(scale, lla6, lla11, lla3, scale)
+	create_mesh(scale, lla3, lla11, lla12, scale)
+	create_mesh(scale, lla3, lla12, lla7, scale)
+	create_mesh(scale, lla8, lla7, lla12, scale)
+	create_mesh(scale, lla9, lla7, lla8, scale)
+	create_mesh(scale, lla9, lla2, lla7, scale)
+	create_mesh(scale, lla10, lla2, lla9, scale)
+	create_mesh(scale, lla10, lla6, lla2, scale)
+	create_mesh(scale, lla10, lla5, lla6, scale)
+	create_mesh(scale, lla5, lla11, lla6, scale)
+	create_mesh(scale, lla11, lla5, lla4, scale)
+	create_mesh(scale, lla11, lla4, lla12, scale)
+	create_mesh(scale, lla12, lla4, lla8, scale)
+	create_mesh(scale, lla1, lla9, lla8, scale)
+	create_mesh(scale, lla1, lla10, lla9, scale)
+	create_mesh(scale, lla5, lla10, lla1, scale)
+	create_mesh(scale, lla5, lla1, lla4, scale)
+	create_mesh(scale, lla4, lla1, lla8, scale)

@@ -1,0 +1,9 @@
+[gd_resource type="SpatialMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://assets/shaders/outline.tres" type="Material" id=1]
+
+[resource]
+next_pass = ExtResource( 1 )
+params_grow = true
+params_grow_amount = -0.05
+albedo_color = Color( 0.517647, 0.368627, 0.152941, 1 )
