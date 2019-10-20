@@ -8,8 +8,8 @@ var selected = null
 var ray_length = 1000
 
 func _ready():
-	camera = get_node('/root/Spatial/CameraBase/CameraArm/Pivot/Camera')
-	gui = get_node('/root/Spatial/GUI')
+	camera = get_node('/root/spatial/camera_base/camera_arm/pivot/camera_main')
+	gui = get_node('/root/spatial/gui')
 	
 	gui.connect('_spawn_create', self, '_on_create')
 	gui.connect('_spawn_cancel', self, '_on_cancel')

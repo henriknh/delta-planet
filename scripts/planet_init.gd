@@ -1,7 +1,7 @@
 extends Spatial
 
 
-onready var functions = preload("res://scripts/Functions.gd").new()
+onready var functions = preload("res://scripts/planet_functions.gd").new()
 onready var shader_planet = preload("res://assets/shaders/planet.tres")
 onready var shader_outline = preload("res://assets/shaders/outline.tres")
 onready var shader_outline_script = preload("res://assets/shaders/outline_script.tres")
@@ -14,6 +14,7 @@ enum PLANET_SIZE {
 export(PLANET_SIZE) var planet_size = PLANET_SIZE.small
 
 var immGeo = ImmediateGeometry.new()
+var is_target = false
 
 func create_tri(corners):
 	var normal = -functions.calc_surface_normal_newell_method(corners)
@@ -55,12 +56,37 @@ func create_mesh(scale, lla1, lla2, lla3, curr_division):
 
 func _ready():
 	print('Planet size: ', planet_size)
-	create_planet(planet_size)
 	
-func create_planet(scale=PLANET_SIZE.small):
+	set_target()
+	
+	add_to_group('planets')
+	
+func set_target(is_new_target = false):
+	var node = null
+	if is_new_target:
+		node = get_node('planet_detailed')
+		load_detailed()
+	else:
+		node = get_node('planet_preview')
+		load_preview()
+	
+	if node:
+		node.queue_free()
+	is_target = is_new_target
+	
+func load_preview():
+	var mesh = MeshInstance.new()
+	mesh.mesh = SphereMesh.new()
+	mesh.mesh.radial_segments = 16
+	mesh.mesh.rings = 16
+	mesh.set_scale(Vector3(planet_size*50, planet_size*50, planet_size*50))
+	mesh.set_name('planet_preview')
+	mesh.material_override = shader_planet
+	add_child(mesh)
+	
+func load_detailed():
 	
 	immGeo = ImmediateGeometry.new()
-	
 	immGeo.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
 	var lla1 = Vector3(0, -58.5, 0)
@@ -76,40 +102,30 @@ func create_planet(scale=PLANET_SIZE.small):
 	var lla11 = Vector3(148.5, 0, 0)
 	var lla12 = Vector3(-148.5, 0, 0)
 
-	create_mesh(scale, lla2, lla3, lla7, scale)
-	create_mesh(scale, lla2, lla6, lla3, scale)
-	create_mesh(scale, lla6, lla11, lla3, scale)
-	create_mesh(scale, lla3, lla11, lla12, scale)
-	create_mesh(scale, lla3, lla12, lla7, scale)
-	create_mesh(scale, lla8, lla7, lla12, scale)
-	create_mesh(scale, lla9, lla7, lla8, scale)
-	create_mesh(scale, lla9, lla2, lla7, scale)
-	create_mesh(scale, lla10, lla2, lla9, scale)
-	create_mesh(scale, lla10, lla6, lla2, scale)
-	create_mesh(scale, lla10, lla5, lla6, scale)
-	create_mesh(scale, lla5, lla11, lla6, scale)
-	create_mesh(scale, lla11, lla5, lla4, scale)
-	create_mesh(scale, lla11, lla4, lla12, scale)
-	create_mesh(scale, lla12, lla4, lla8, scale)
-	create_mesh(scale, lla1, lla9, lla8, scale)
-	create_mesh(scale, lla1, lla10, lla9, scale)
-	create_mesh(scale, lla5, lla10, lla1, scale)
-	create_mesh(scale, lla5, lla1, lla4, scale)
-	create_mesh(scale, lla4, lla1, lla8, scale)
+	create_mesh(planet_size, lla2, lla3, lla7, planet_size)
+	create_mesh(planet_size, lla2, lla6, lla3, planet_size)
+	create_mesh(planet_size, lla6, lla11, lla3, planet_size)
+	create_mesh(planet_size, lla3, lla11, lla12, planet_size)
+	create_mesh(planet_size, lla3, lla12, lla7, planet_size)
+	create_mesh(planet_size, lla8, lla7, lla12, planet_size)
+	create_mesh(planet_size, lla9, lla7, lla8, planet_size)
+	create_mesh(planet_size, lla9, lla2, lla7, planet_size)
+	create_mesh(planet_size, lla10, lla2, lla9, planet_size)
+	create_mesh(planet_size, lla10, lla6, lla2, planet_size)
+	create_mesh(planet_size, lla10, lla5, lla6, planet_size)
+	create_mesh(planet_size, lla5, lla11, lla6, planet_size)
+	create_mesh(planet_size, lla11, lla5, lla4, planet_size)
+	create_mesh(planet_size, lla11, lla4, lla12, planet_size)
+	create_mesh(planet_size, lla12, lla4, lla8, planet_size)
+	create_mesh(planet_size, lla1, lla9, lla8, planet_size)
+	create_mesh(planet_size, lla1, lla10, lla9, planet_size)
+	create_mesh(planet_size, lla5, lla10, lla1, planet_size)
+	create_mesh(planet_size, lla5, lla1, lla4, planet_size)
+	create_mesh(planet_size, lla4, lla1, lla8, planet_size)
 	
 	immGeo.material_override = shader_planet
 	immGeo.cast_shadow = true
 	immGeo.end()
-	immGeo.set_name('planet')
+	immGeo.set_name('planet_detailed')
 	add_child(immGeo)
 	
-	
-	
-	var mesh = MeshInstance.new()
-	mesh.mesh = SphereMesh.new()
-	mesh.set_scale(Vector3(scale*50, scale*50, scale*50))
-	mesh.set_name('preview')
-	mesh.material_override = shader_planet
-	add_child(mesh)
-	
-	add_to_group('planets')

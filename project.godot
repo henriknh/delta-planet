@@ -45,7 +45,7 @@ main_command={
 
 [locale]
 
-translations=PoolStringArray( "res://assets/translations.en.translation", "res://assets/translations.es.translation", "res://assets/translations.ja.translation" )
+translations=PoolStringArray( "res://assets/translations/translations.en.translation", "res://assets/translations/translations.es.translation", "res://assets/translations/translations.ja.translation" )
 
 [rendering]
 

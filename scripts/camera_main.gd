@@ -8,9 +8,9 @@ var move_angle = 0.0
 var move_multiplier = 1.0
 
 const ray_length = 1000
-onready var arm = $CameraArm
-onready var pivot = $CameraArm/Pivot
-onready var cam = $CameraArm/Pivot/Camera
+onready var arm = $camera_arm
+onready var pivot = $camera_arm/pivot
+onready var cam = $camera_arm/pivot/camera_main
 
 onready var target_planet = null
 
@@ -23,13 +23,19 @@ var ZOOM_SPEED = 25
 var gui
 
 func _ready():
-	gui = get_node('/root/Spatial/GUI')
+	gui = get_node('/root/spatial/gui')
 	gui.connect('_input_button', self, '_on_input_button')
 	gui.connect('_input_motion', self, '_on_input_motion')
 	
-	target_planet = get_node('/root/Spatial/Planet')
+	var planets = get_tree().get_nodes_in_group('planets')
+	#var target_planet = get_node('/root/spatial/planet')
+	var sun = get_node('/root/spatial/sun')
 	
-	arm.translate(Vector3(0, target_planet.planet_size * 50, 0))
+	var arm_pos = 0
+	#arm_pos = target_planet.planet_size
+	arm_pos = sun.scale.x
+	
+	arm.translate(Vector3(0, arm_pos * 50, 0))
 
 func _process(delta):
 	var m_pos = get_viewport().get_mouse_position()
@@ -37,11 +43,12 @@ func _process(delta):
 	if Input.is_action_just_pressed("main_command"):
 		move_all_units(m_pos)
 	
-	# zoom
-	if target_zoom < target_planet.planet_size:
-		target_zoom = target_planet.planet_size
-	if target_zoom > target_planet.planet_size * 4000:
-		target_zoom = target_planet.planet_size * 4000
+	if target_planet:
+		# zoom
+		if target_zoom < target_planet.planet_size:
+			target_zoom = target_planet.planet_size
+		if target_zoom > target_planet.planet_size * 4000:
+			target_zoom = target_planet.planet_size * 4000
 		
 	smooth_zoom = lerp(smooth_zoom, target_zoom, ZOOM_SPEED * delta)
 	var diff = cam.get_transform().origin.z - smooth_zoom
@@ -99,9 +106,9 @@ func raycast_from_mouse(m_pos, collision_mask):
 	return space_state.intersect_ray(ray_start, ray_end, [], collision_mask)
 	
 func _on_input_button(event):
-	if event.button_index == 4:
+	if event.button_index == 4 and target_planet:
 		target_zoom -= target_planet.planet_size
-	elif event.button_index == 5:
+	elif event.button_index == 5 and target_planet:
 		target_zoom += target_planet.planet_size
 	if event.button_index == 2 and event.pressed:
 		camera_rotate = true
