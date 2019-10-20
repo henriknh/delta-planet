@@ -1,12 +1,11 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://scripts/Planet.gd" type="Script" id=1]
-[ext_resource path="res://scripts/spawner.gd" type="Script" id=2]
-[ext_resource path="res://scripts/camera_base.gd" type="Script" id=3]
-[ext_resource path="res://scripts/camera.gd" type="Script" id=4]
-[ext_resource path="res://assets/prefabs/gui.tscn" type="PackedScene" id=5]
-[ext_resource path="res://scripts/click.gd" type="Script" id=6]
-[ext_resource path="res://assets/prefabs/mini_planet.tscn" type="PackedScene" id=7]
+[ext_resource path="res://scripts/SpawnerBuildings.gd" type="Script" id=2]
+[ext_resource path="res://scripts/CameraMain.gd" type="Script" id=3]
+[ext_resource path="res://assets/prefabs/gui.tscn" type="PackedScene" id=4]
+[ext_resource path="res://assets/prefabs/mini_planet.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scripts/SpawnerPlanets.gd" type="Script" id=6]
 
 [sub_resource type="PanoramaSky" id=1]
 
@@ -17,11 +16,30 @@ background_color = Color( 0.0392157, 0.0392157, 0.0784314, 1 )
 ambient_light_color = Color( 1, 1, 1, 1 )
 ambient_light_energy = 0.1
 
+[sub_resource type="GDScript" id=3]
+script/source = "extends Spatial
+
+const ray_length = 1000
+var from
+var to
+
+func _input(event):
+	
+	return
+	
+	if event is InputEventMouseButton and event.pressed and event.button_index == 1:
+		var camera = $Camera
+		var from = camera.project_ray_origin(event.position)
+		var to = from + camera.project_ray_normal(event.position) * ray_length
+		var space_state = get_world().get_direct_space_state()
+		var result = space_state.intersect_ray(from, to)
+		print(result)
+"
+
 [node name="Spatial" type="Spatial"]
 
 [node name="Planet" type="Spatial" parent="."]
 script = ExtResource( 1 )
-planet_size = 4
 
 [node name="Spawner" type="Spatial" parent="Planet"]
 script = ExtResource( 2 )
@@ -33,24 +51,25 @@ script = ExtResource( 3 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0 )
 
 [node name="Pivot" type="Spatial" parent="CameraBase/CameraArm"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 
 [node name="Camera" type="Camera" parent="CameraBase/CameraArm/Pivot"]
 transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 25 )
 environment = SubResource( 2 )
 current = true
 far = 8192.0
-script = ExtResource( 4 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 0.858871, -0.173104, 0.482055, 0, 0.941158, 0.337966, -0.512193, -0.290269, 0.808333, 0, 0, 0 )
 shadow_enabled = true
 
-[node name="GUI" parent="." instance=ExtResource( 5 )]
+[node name="GUI" parent="." instance=ExtResource( 4 )]
 
 [node name="RayCast" type="RayCast" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.65704, 0.753855, 0, -0.753855, 0.65704, 0, 0, 0 )
-script = ExtResource( 6 )
+script = SubResource( 3 )
 
-[node name="Spatial2" parent="." instance=ExtResource( 7 )]
+[node name="Spatial2" parent="." instance=ExtResource( 5 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -180.947, 0, 0 )
+
+[node name="PlanetSpawner" type="Spatial" parent="."]
+script = ExtResource( 6 )

@@ -13,39 +13,25 @@ enum PLANET_SIZE {
 }
 export(PLANET_SIZE) var planet_size = PLANET_SIZE.small
 
+var immGeo = ImmediateGeometry.new()
+
 func create_tri(corners):
 	var normal = -functions.calc_surface_normal_newell_method(corners)
 	var center = functions.center_tri(corners)
 	
-	var tmpTri = ImmediateGeometry.new()
-	tmpTri.begin(Mesh.PRIMITIVE_TRIANGLES)
-	tmpTri.set_normal(normal)
+	immGeo.set_normal(normal)
 	for corner in corners:
-		tmpTri.add_vertex(corner)
-	tmpTri.end()
-	
-	# load shader material
-	
-	
-	var mat = SpatialMaterial.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.albedo_color = Color.red
-	#mat.shader = shader
-	shader_planet.next_pass = shader_outline_script
-	tmpTri.material_override = shader_planet
-	tmpTri.cast_shadow = true
+		immGeo.add_vertex(corner)
 	
 	var body = StaticBody.new()
 	var shape = ConcavePolygonShape.new()
 	shape.set_faces(corners)
 	var owner_id = body.create_shape_owner(body)
 	body.shape_owner_add_shape(owner_id, shape)
-	tmpTri.add_child(body)
+	immGeo.add_child(body)
 	
-	tmpTri.set_meta("normal", normal)
-	tmpTri.set_meta("center", center)
-	
-	add_child(tmpTri)
+	#tmpTri.set_meta("normal", normal)
+	#tmpTri.set_meta("center", center)
 
 func create_mesh(scale, lla1, lla2, lla3, curr_division):
 		if curr_division == 0:
@@ -72,6 +58,11 @@ func _ready():
 	create_planet(planet_size)
 	
 func create_planet(scale=PLANET_SIZE.small):
+	
+	immGeo = ImmediateGeometry.new()
+	
+	immGeo.begin(Mesh.PRIMITIVE_TRIANGLES)
+	
 	var lla1 = Vector3(0, -58.5, 0)
 	var lla2 = Vector3(0, 58.5, 0)
 	var lla3 = Vector3(180, 58.5, 0)
@@ -105,3 +96,20 @@ func create_planet(scale=PLANET_SIZE.small):
 	create_mesh(scale, lla5, lla10, lla1, scale)
 	create_mesh(scale, lla5, lla1, lla4, scale)
 	create_mesh(scale, lla4, lla1, lla8, scale)
+	
+	immGeo.material_override = shader_planet
+	immGeo.cast_shadow = true
+	immGeo.end()
+	immGeo.set_name('planet')
+	add_child(immGeo)
+	
+	
+	
+	var mesh = MeshInstance.new()
+	mesh.mesh = SphereMesh.new()
+	mesh.set_scale(Vector3(scale*50, scale*50, scale*50))
+	mesh.set_name('preview')
+	mesh.material_override = shader_planet
+	add_child(mesh)
+	
+	add_to_group('planets')
