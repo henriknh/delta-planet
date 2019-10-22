@@ -27,15 +27,12 @@ func _ready():
 	gui.connect('_input_button', self, '_on_input_button')
 	gui.connect('_input_motion', self, '_on_input_motion')
 	
-	var planets = get_tree().get_nodes_in_group('planets')
-	#var target_planet = get_node('/root/spatial/planet')
-	var sun = get_node('/root/spatial/sun')
-	
-	var arm_pos = 0
-	#arm_pos = target_planet.planet_size
-	arm_pos = sun.scale.x
-	
-	arm.translate(Vector3(0, arm_pos * 50, 0))
+func set_target_planet(instance):
+	target_planet = instance
+	arm.translate(Vector3(0, target_planet.planet_size * 50, 0))
+	print(target_planet.translation)
+	set_translation(target_planet.translation)
+	print(translation)
 
 func _process(delta):
 	var m_pos = get_viewport().get_mouse_position()

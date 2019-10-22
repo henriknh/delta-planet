@@ -55,10 +55,7 @@ func create_mesh(scale, lla1, lla2, lla3, curr_division):
 				create_mesh(scale, corners[i[0] - 1], corners[i[1] - 1], corners[i[2] - 1], next_division)
 
 func _ready():
-	print('Planet size: ', planet_size)
-	
 	set_target()
-	
 	add_to_group('planets')
 	
 func set_target(is_new_target = false):
