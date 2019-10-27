@@ -29,10 +29,12 @@ func _ready():
 	
 func set_target_planet(instance):
 	target_planet = instance
-	arm.translate(Vector3(0, target_planet.planet_size * 50, 0))
-	print(target_planet.translation)
-	set_translation(target_planet.translation)
-	print(translation)
+	arm.translate(Vector3(0, target_planet.size * 50, 0))
+	call_deferred("reparent",target_planet)
+	
+func reparent(target_planet):
+	get_parent().remove_child(self)
+	target_planet.find_node('planet', true, false).add_child(self) 
 
 func _process(delta):
 	var m_pos = get_viewport().get_mouse_position()
@@ -42,10 +44,10 @@ func _process(delta):
 	
 	if target_planet:
 		# zoom
-		if target_zoom < target_planet.planet_size:
-			target_zoom = target_planet.planet_size
-		if target_zoom > target_planet.planet_size * 4000:
-			target_zoom = target_planet.planet_size * 4000
+		if target_zoom < target_planet.size:
+			target_zoom = target_planet.size
+		if target_zoom > target_planet.size * 4000:
+			target_zoom = target_planet.size * 4000
 		
 	smooth_zoom = lerp(smooth_zoom, target_zoom, ZOOM_SPEED * delta)
 	var diff = cam.get_transform().origin.z - smooth_zoom
@@ -104,9 +106,9 @@ func raycast_from_mouse(m_pos, collision_mask):
 	
 func _on_input_button(event):
 	if event.button_index == 4 and target_planet:
-		target_zoom -= target_planet.planet_size
+		target_zoom -= target_planet.size * 25
 	elif event.button_index == 5 and target_planet:
-		target_zoom += target_planet.planet_size
+		target_zoom += target_planet.size * 25
 	if event.button_index == 2 and event.pressed:
 		camera_rotate = true
 	else:
@@ -119,7 +121,7 @@ func _on_input_button(event):
 func _on_input_motion(event):
 	if camera_rotate:
 		# pivot
-		pivot.rotate_object_local(Vector3(-1, 0, 0), event.relative[1] / 100.0)
+		#pivot.rotate_object_local(Vector3(-1, 0, 0), event.relative[1] / 100.0)
 		if pivot.rotation_degrees.x < -45:
 			pivot.rotate_x(deg2rad(abs(pivot.rotation_degrees.x) - 45))
 		if pivot.rotation_degrees.x > 45:

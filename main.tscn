@@ -16,7 +16,7 @@ background_mode = 2
 background_sky = SubResource( 1 )
 background_color = Color( 0.0392157, 0.0392157, 0.0784314, 1 )
 ambient_light_color = Color( 1, 1, 1, 1 )
-ambient_light_energy = 0.1
+ambient_light_energy = 0.3
 
 [sub_resource type="GDScript" id=3]
 script/source = "extends Spatial
@@ -50,12 +50,13 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0 )
 
 [node name="pivot" type="Spatial" parent="camera_base/camera_arm"]
+transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )
 
 [node name="camera_main" type="Camera" parent="camera_base/camera_arm/pivot"]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 25, 25 )
+transform = Transform( 1, 2.16168e-008, -2.16168e-008, 0, 0.707107, 0.707107, 3.05708e-008, -0.707107, 0.707107, 0, 25, 25 )
 environment = SubResource( 2 )
 current = true
-far = 8192.0
+far = 100000.0
 
 [node name="gui" parent="." instance=ExtResource( 3 )]
 
@@ -70,7 +71,7 @@ script = ExtResource( 4 )
 script = ExtResource( 5 )
 
 [node name="sun" type="Spatial" parent="."]
-transform = Transform( 400, 0, 0, 0, 400, 0, 0, 0, 400, 0, 0, 0 )
+transform = Transform( 400, 0, 0, 0, 400, 0, 0, 0, 400, 0.00402623, 0, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="sun"]
 mesh = SubResource( 4 )
@@ -79,5 +80,6 @@ material/0 = null
 [node name="OmniLight" type="OmniLight" parent="sun"]
 shadow_enabled = true
 shadow_bias = 16.0
-omni_range = 4096.0
+omni_range = 100000.0
+omni_attenuation = 0.277393
 omni_shadow_mode = 0

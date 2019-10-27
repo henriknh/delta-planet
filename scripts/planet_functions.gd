@@ -1,6 +1,6 @@
-var elev_data = []
+extends Reference
 
-static func calc_surface_normal(vert1, vert2, vert3): # calculate a normal using 3 vertices
+func calc_surface_normal(vert1, vert2, vert3): # calculate a normal using 3 vertices
 	var U = (vert2 - vert1)
 	var V = (vert3 - vert1)
 
